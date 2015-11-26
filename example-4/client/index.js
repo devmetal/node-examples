@@ -37,15 +37,18 @@ function Chat(port, host, user) {
 };
 
 Chat.prototype.send = function(msg, cb) {
-  let message = JOSN.stringify({
+  let message = JSON.stringify({
     usr: this.user,
     msg: msg
   });
   this.socket.write(message, cb || null);
 };
 
-Chat.prototype.leave = function() {
-  this.socket.end();
+Chat.prototype.leave = function(cb) {
+  this.socket.destroy();
+  if (typeof cb === 'function') {
+    cb();
+  }
 };
 
 util.inherits(Chat, EventEmitter);
@@ -56,24 +59,14 @@ commander
   .option('--host <host>', 'Server hostname')
   .action(function(uname){
     let screen = Blessed.screen({
-      // Example of optional settings:
-      smartCSR: true,
-      useBCE: true,
-      cursor: {
-          artificial: true,
-          blink: true,
-          shape: 'underline'
-      },
-      log: `${__dirname}/application.log`,
-      debug: true,
-      dockBorders: true
+      smartCSR: true
     });
 
     let messages = Blessed.list({
-      top: 'center',
-      left: '0%',
-      width: '50%',
-      height: '100%',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '90%',
       border: {
         type: 'line'
       },
@@ -82,30 +75,25 @@ commander
         bg: 'magenta',
         border: {
           fg: '#f0f0f0'
-        },
-        hover: {
-          bg: 'green'
         }
       }
     });
 
-    let form = Blessed.form({
-      top: 'center',
-      left: '50%',
-      width: '50%',
-      height: '100%',
-      border: {
-        type: 'line'
+    let input = Blessed.textbox({
+      bottom:0,
+      left:0,
+      width: '100%',
+      height: '10%',
+      inputOnFocus: true,
+      style: {
+          fg: 'white',
+          bg: 'red'
       }
     });
 
-    let input = Blessed.textarea();
-    form.append(input);
-
-    // Specify the title of the application.
     screen.title = uname;
     screen.append(messages);
-    screen.append(form);
+    screen.append(input);
 
     let port = commander.port || DEFAULT_PORT;
     let host = commander.host || DEFAULT_HOST;
@@ -113,23 +101,29 @@ commander
 
     chat.on('connected', () => {
       input.focus();
-      form.on('submit', () => {
-        chat.send(input.value, () => {
-          input.clearValue();
-        });
+
+      input.on('submit', () => {
+        let val = input.value;
+        chat.send(val);
+        input.clearValue();
+        input.focus();
       });
+
       screen.render();
-      screen.key(['q', 'C-c'], function(ch, key) {
-          process.exit(0);
-      });
     });
 
     chat.on('server', (message) => {
-      messages.unshiftItem(`SERVER:${message.msg}`);
+      messages.unshiftItem(`SERVER: ${message.msg}`);
+      screen.render();
     });
 
     chat.on('message', (message) => {
-      messages.unshiftItem(`${message.user}:${message.msg}`);
+      if (message.user === chat.user) {
+          messages.unshiftItem(`You: ${message.msg}`);
+      } else {
+          messages.unshiftItem(`${message.user}: ${message.msg}`);
+      }
+      screen.render();
     });
 
     chat.on('error', () => {
@@ -137,6 +131,8 @@ commander
       process.exit(1);
     });
 
-    process.on('beforeExit', () => chat.leave());
+    screen.key(['q', 'C-c'], function(ch, key) {
+      chat.leave(() => process.exit(0));
+    });
   })
   .parse(process.argv);

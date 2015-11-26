@@ -9,39 +9,43 @@ const TCP_PORT  = 81;
 const HTTP_PORT = 80;
 
 let chat = {
-  connections: 0,
   messages: [],
-  log:[]
+  log:[],
+  clients:[]
 };
 
 let tcpServer = net.createServer(function(c){
-  chat.connections++;
-
   console.log('Client connected');
-  console.log(`${c.remoteAddress}:${c.remotePort}`);
 
-  c.on('close', () => {
+  chat.clients.push(c);
+
+  c.on('error', function(err){
+    console.log(err.message);
+  });
+
+  c.on('close', function(){
     console.log('Client disconnected');
-    console.log(`${c.remoteAddress}:${c.remotePort}`);
+    let i = chat.clients.indexOf(c);
+    chat.clients.splice(i,1);
   });
 
   c.on('data', (data) => {
-    let message = JSON.parse(data);
-    let user = message.user;
-    let msg = message.msg;
+    let request = JSON.parse(data);
+    let user = request.usr;
+    let mess = request.msg;
 
-    chat.log.push(message);
-
-    if (msg !== 'echo') {
-      chat.messages.unshift({user:user, msg:msg});
-
-      if (chat.messages.length > 5) {
-        chat.messages = chat.messages.slice(0,5);
-      }
-    }
-
-    c.write(JSON.stringify(chat.messages));
+    chat.clients.forEach((client) => {
+      client.write(JSON.stringify({
+        user: user,
+        msg: mess
+      }));
+    });
   });
+
+  c.write(JSON.stringify({
+    isServer:true,
+    msg:'Welcome!'
+  }));
 });
 
 let httpServer = http.createServer(function(req, res){
