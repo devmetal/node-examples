@@ -1,0 +1,8 @@
+{
+  "name": "example-4-client",
+  "version": "0.0.1",
+  "dependencies": {
+    "blessed": "^0.1.81",
+    "commander": "^2.9.0"
+  }
+}
