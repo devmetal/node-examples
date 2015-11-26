@@ -1,7 +1,6 @@
 'use strict';
 
 let net = require('net');
-let http = require('http');
 let fs = require('fs');
 let path = require('path');
 
@@ -48,16 +47,6 @@ let tcpServer = net.createServer(function(c){
   }));
 });
 
-let httpServer = http.createServer(function(req, res){
-  res.setHeader('Content-Type', 'application/json');
-  res.statusCode = 200;
-  res.end(JSON.stringify(chat));
-});
-
 tcpServer.listen(TCP_PORT, function(){
   console.log(`TCP Server Listening on ${TCP_PORT}`);
-});
-
-httpServer.listen(HTTP_PORT, function(){
-  console.log(`HTTP Server Listening on ${HTTP_PORT}`);
 });
