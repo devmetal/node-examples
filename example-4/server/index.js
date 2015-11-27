@@ -7,16 +7,13 @@ let path = require('path');
 const TCP_PORT  = 81;
 const HTTP_PORT = 80;
 
-let chat = {
-  messages: [],
-  log:[],
-  clients:[]
-};
+let messages = [];
+let clients  = [];
 
 let tcpServer = net.createServer(function(c){
   console.log('Client connected');
 
-  chat.clients.push(c);
+  clients.push(c);
 
   c.on('error', function(err){
     console.log(err.message);
@@ -24,8 +21,8 @@ let tcpServer = net.createServer(function(c){
 
   c.on('close', function(){
     console.log('Client disconnected');
-    let i = chat.clients.indexOf(c);
-    chat.clients.splice(i,1);
+    let i = clients.indexOf(c);
+    clients.splice(i,1);
   });
 
   c.on('data', (data) => {
@@ -33,12 +30,12 @@ let tcpServer = net.createServer(function(c){
     let user = request.usr;
     let mess = request.msg;
 
-    chat.clients.forEach((client) => {
+    for (let client of clients) {
       client.write(JSON.stringify({
         user: user,
         msg: mess
       }));
-    });
+    }
   });
 
   c.write(JSON.stringify({
