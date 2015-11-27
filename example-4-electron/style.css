@@ -1,0 +1,6 @@
+@import url(https://fonts.googleapis.com/css?family=Inconsolata:400,700&subset=latin,latin-ext);
+
+* {
+  margin: 0;
+  font-family: 'Inconsolata', monospace;
+}
