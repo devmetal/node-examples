@@ -1,4 +1,5 @@
 const electron = require('electron');
+const ipcMain  = require('electron').ipcMain;
 const app = electron.app;  // Module to control application life.
 const BrowserWindow = electron.BrowserWindow;  // Module to create native browser window.
 
@@ -26,6 +27,11 @@ app.on('ready', function() {
   mainWindow.setMenu(null);
   // and load the index.html of the app.
   mainWindow.loadURL('file://' + __dirname + '/index.html');
+  mainWindow.webContents.openDevTools();
+
+  mainWindow.webContents.on('did-finish-load', function() {
+
+  });
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function() {

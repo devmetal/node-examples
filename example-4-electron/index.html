@@ -4,12 +4,29 @@
     <meta charset="UTF-8">
     <title>Hello World!</title>
     <link rel="stylesheet" href="style.css">
+    <script>
+      var ipcRenderer = require('electron').ipcRenderer;
+    </script>
   </head>
   <body>
-    <div id="messages">
+    <div id="container">
+      <div id="home" class="active">
+        <h1>Home page</h1>
+      </div>
+      <div id="chat">
+        <div id="messages">
+        </div>
+        <div id="input">
+          <input type="text" id="message" placeholder="Type here...">
+        </div>
+      </div>
     </div>
-    <div id="input">
-      <input type="text" id="message" placeholder="Type here...">
-    </div>
+    <script>
+      var chat = document.querySelector("#chat");
+      var home = document.querySelector("#home");
+      home.onclick = function() {
+        chat.classList.add("active");
+      }
+    </script>
   </body>
 </html>
