@@ -57,7 +57,7 @@
         let messageElem = document.createElement("div");
         messageElem.classList.add("message");
         messageElem.innerHTML = `<span>${sender}: </span>${msg}`;
-        messagesList.appendChild(messageElem);
+        messagesList.insertBefore(messageElem, messagesList.firstChild);
       };
 
       unameField.onkeypress = function(evt) {
